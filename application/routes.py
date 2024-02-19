@@ -11,10 +11,18 @@ scheduler = BackgroundScheduler()
 def index():
     if request.method == 'POST':
         url = request.form['url']
-        keyword = request.form['keyword']
         now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         db.urls.insert_many([{'url': url, 'date_time': now }])
-        db.key.insert_many([{'keyword': keyword, 'date_time': now }])
+        return redirect(url_for('matches')) 
+    return render_template('index.html')
+
+@app.route("/keys", methods=["GET","POST"])
+def keys():
+    if request.method == 'POST':
+        keyword = request.form['keyword'].split(',')  #split input by comma
+        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        for keywords in keyword:
+            db.key.insert_many([{'keyword': keywords.strip(), 'date_time': now }])  #remove any whitespace using strip()
         return redirect(url_for('matches')) 
     return render_template('index.html')
 
@@ -22,9 +30,12 @@ def index():
 def matches():
     cursor = db.key.find()
     match_data = list(cursor)
+    cursor = db.urls.find()
+    url_s = list(cursor)
     info_cursor = db.information.find().sort('_id', 1).limit(1)
-    latest_info = list(info_cursor)[0] if info_cursor else None
-    return render_template('index.html', match_data=match_data, latest_info=latest_info)
+    latest_info = list(info_cursor)[0]
+    return render_template('index.html', match_data=match_data, latest_info=latest_info, url_s=url_s)
+
     # return render_template('index.html', match_data=match_data)
 
 @app.route("/stored", methods=['GET','POST'])
@@ -37,7 +48,6 @@ def stored():
             url = "https://" + url
         response = requests.get(url)
         soup = BeautifulSoup(response.content, 'html.parser')
-        # print(soup)
         title = soup.title.string
         links = []
         for link in soup.find_all('a'):
@@ -77,7 +87,7 @@ def get_information():
                         if a_tag:
                             author_name = a_tag.text.strip()
                         else:
-                            author_name = "Express Web Desk"
+                            author_name = "Express Web Desk" if not a_tag else a_tag.text.strip()
 
                     # paragraph
                     paragraph_tags = soup.find_all('p')
@@ -87,6 +97,8 @@ def get_information():
                     date_time_span = soup.find('span', {'itemprop': 'dateModified'})
                     if date_time_span:
                         date_time = date_time_span.get_text().replace('Updated: ', '')
+                    else:
+                        date_time = ''
 
                     # heading
                     heading = soup.title.string
@@ -105,17 +117,8 @@ def get_information():
                         'paragraph': [paragraph_texts]
                     }
                     db.information.insert_one(information)
-                    
-                    url_update = db.information.find_one({'url': url}, {'_id': 1})
-                    if url_update:
-                        # If the URL exists, update the existing document
-                        db.information.update_one({'url': url}, {'$set': information})
-                    else:
-                        # If the URL does not exist, insert a new document
-                        db.information.insert_one(information)
-
 
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(get_information, 'interval', minutes=15)
+scheduler.add_job(get_information, 'interval', hours=3)
 scheduler.start()
