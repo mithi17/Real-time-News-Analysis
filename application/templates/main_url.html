@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block content %}
+<div class="row">
+    <div class="column">
+        <h1>Main URLs</h1>
+        <table border="2" class="styled-table">
+            <thead>
+                <tr>
+                    <th>Main URL</th>
+                    <!-- <th>DateTime</th> -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in main_urls %}
+                    <tr>
+                        <td>{{ item.url }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}

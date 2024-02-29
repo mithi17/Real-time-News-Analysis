@@ -1,0 +1,14 @@
+<form id="searchForm" action="{{ url_for('index') }}" method="post">
+    <label for="url">Enter url:</label>
+    <input type="text" id="url" placeholder="Enter URL" name="url" required>
+    <button class="btn btn-outline-success my-1 my-sm-2" value="submit" type="submit">Search</button>
+    
+</form>
+<form id="keyword" action="{{ url_for('keys') }}" method="post">
+    <label for="keyword">Keyword:</label>
+    <input type="text" id="keyword" placeholder="Enter keyword" name="keyword" required><br>
+    <!-- <input type="submit" value="Submit"> -->
+    <button class="btn btn-outline-success my-1 my-sm-2" value="submit" type="submit">key</button>
+    
+</form>
+{% block content %}{% endblock %}
