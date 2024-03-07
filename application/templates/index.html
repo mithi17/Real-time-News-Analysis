@@ -1,77 +1,14 @@
 {% extends "layout.html" %}
 {% block content %}
-<div class="row">
-    <div class="column">
-        <!-- <h1>SEARCH</h1> -->
+<div class="search">
 
-        <form id="searchForm" action="{{ url_for('index') }}" method="post">
-            <label for="url">Enter url:</label>
-            <input type="text" id="url" placeholder="Enter URL" name="url" required>
-            <button class="btn btn-outline-success my-1 my-sm-2" value="submit" type="submit">Search</button>
-            
-        </form>
+    <form id="searchForm" action="{{ url_for('index') }}" method="post" > 
+        <!--<label for="url">Enter url:</label> -->
+        <input type="text" id="url" placeholder="Enter URL" name="url" required>
+        <button class="btn btn-outline-success my-1 my-sm-2" value="submit" type="submit">Search</button>
         
-    </div>
-        
-    <!-- <div class="column" style="background-color:#bbbbbb08;">
+    </form>
 
-        <!-- {% if latest_info %}
-            <p>Last updated on {{ latest_info.updated_on }} by {{ latest_info.author }}</p>
-        {% endif %} -->
-    
-        <!-- {% for items in url_s %}
-            <details style="max-height: 500px; overflow-y: auto;">
-                <h3>Sub URL's</h3>
-                <summary>{{ items.url }}</summary>
-                {% for item in main_urls %}
-                    <div>
-                        <p>{{item.url }}</p>
-                    </div>
-                {% endfor %}
-            </details>
-        {% endfor %}
-
-        <br>
-        <table border="2" class="styled-table" id="home-table">
-            <h3>Home URL</h3> 
-            <thead>
-                <tr>
-                    <th>Home URL</th>
-                    <th>DateTime</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in url_s %}
-                    <tr>
-                        <td>{{ item.url }}</td>
-                        <td contenteditable='true'>{{ item.date_time }}</td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table> -->
-
-
-        <!-- {% for items in url_s %}
-            <div class="accordion" id="accordionExample">
-                <div class="card">
-                <div class="card-header" id="headingOne">
-                    <h2 class="mb-0">
-                    <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
-                    {{items.url}} 
-                    </button>
-                    </h2>
-                </div>
-                <div id="collapseOne" class="collapse-show" aria-labelledby="headingOne" data-parent="#accordionExample">
-                    {% for item in main_urls %}
-                        <div class="card-body">
-                        {{item.url}}
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-        {% endfor %} -->
-        
-    </div>
 </div>
 
 {% endblock content %}

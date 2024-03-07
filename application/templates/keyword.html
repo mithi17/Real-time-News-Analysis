@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+{% block content %}
+<br>
+<br>
+<br>
+<h4 align="center">Full-Text Search</h4>
+    <br>
+    <div class="search">
+        <form id="searchForm" align="center">
+            <label for="keyword">Enter Keyword:</label>
+            <input type="text" id="keyword" name="keyword">
+            <button class="btn btn-outline-success my-1 my-sm-2" type="submit">Search</button>
+        </form>
+    </div>
+
+    
+    <div id="searchResults"></div>
+
+    <script>
+        jQuery(document).ready(function($) {
+            // Your jQuery code here
+            $('#searchForm').submit(function(event) {
+                event.preventDefault();
+                var keyword = $('#keyword').val().trim();
+                console.log(keyword);
+    
+                $.ajax({
+                    url: '/search',
+                    type: 'POST',
+                    data: { keyword: keyword },
+                    success: function(response) {
+                        displaySearchResults(response);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error:', error);
+                    }
+                });
+            });
+    
+            function displaySearchResults(results) {
+                var searchResultsDiv = $('#searchResults');
+                searchResultsDiv.empty(); // Clear previous results
+    
+                var count = results.length; // Count the number of articles
+    
+                if (count === 0) {
+                    searchResultsDiv.append('<p>No articles found.</p>');
+                } else {
+                    searchResultsDiv.append('<p>Number of articles found: ' + count + '</p>');
+    
+                    results.forEach(function(article) {
+                       // console.log("Article:", article);
+                        searchResultsDiv.append('<h3>' + article.url + '</h3><p>' + article.heading + '</p><p>' + article.paragraph + '</p>');
+                    });
+                }
+            }
+        });
+    </script>
+       
+
+{% endblock content %}

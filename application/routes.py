@@ -1,8 +1,8 @@
-from application import app,render_template,request, redirect, url_for,db,datetime,requests,BeautifulSoup,re
+from application import app,render_template,request, redirect, url_for,db,datetime,requests,BeautifulSoup,re, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from urllib.parse import urlparse
-from bson.objectid import ObjectId
-from flask import jsonify
+# from bson.objectid import ObjectId
+# from flask import jsonify
 
    
 scheduler = BackgroundScheduler()
@@ -12,42 +12,61 @@ scheduler = BackgroundScheduler()
 @app.route("/home", methods=["GET","POST"])
 def index():
     if request.method == 'POST':
-        url = request.form['url']
+        url = request.form['url'].split(',')
         now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        db.home_url.insert_many([{'url': url, 'date_time': now }])
+        db.home_url.insert_many([{'url': url.strip(), 'date_time': now }])
         return redirect(url_for('matches')) 
     return render_template('index.html')
 
-# @app.route('/update_table', methods=['POST'])
-# def update_table():
-#     data = request.get_json()
-#     row_index = data['rowIndex']
-#     column_index = data['columnIndex']
-#     value = data['value']
+@app.route('/keyword', methods=['GET', 'POST'])
+def keyword():
+    return render_template('keyword.html')
 
-#     return jsonify({'Updated': 'success'})
 
-@app.route("/keys", methods=["GET","POST"])
-def keys():
+@app.route('/overview', methods=['GET', 'POST'])
+def overview():
+    return render_template('overview.html')
+
+@app.route('/search', methods=['POST'])
+def search_articles():
+    keyword = request.form['keyword']
+    results = []
+
+    # Perform full-text search in MongoDB
+    cursor = db.information.find({"$text": {"$search": keyword}}, {"score": {"$meta": "textScore"}}).sort([("score", {"$meta": "textScore"})])
+    # Append search results to the list
+    for doc in cursor:
+        # print(doc)
+        results.append({'paragraph': doc['paragraph'], 'heading': doc['heading'], 'url': doc['url']})
+
+    return jsonify(results)
+
+
+
+@app.route('/update', methods=['POST'])
+def update():
+    print("Updated")
     if request.method == 'POST':
-        keyword = request.form['keyword'].split(',')  #split input by comma
-        now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        for keywords in keyword:
-            db.key.insert_many([{'keyword': keywords.strip(), 'date_time': now }])  #remove any whitespace using strip()
-        return redirect(url_for('matches')) 
-    return render_template('index.html')
+        # Get updated data from the frontend
+        updated_data = request.get_json()
+        # print(updated_data)
 
-@app.route("/info", methods=['GET','POST'])
+        # Update MongoDB with the new data
+        for item in updated_data:
+            field2=item['date_time']
+            print(field2)
+            db.home_url.update_one({'url': item['url']}, {'$set': {'date_time': field2}})
+
+        return 'Data updated successfully'
+    
+
+@app.route("/matches", methods=['GET','POST'])
 def matches():
-    cursor = db.main_url.find()
-    main_urls = list(cursor)
-    cursor = db.key.find()
-    match_data = list(cursor)
     cursor = db.home_url.find()
     url_s = list(cursor)
     info_cursor = db.information.find().sort('_id', -1).limit(1)
     latest_info = list(info_cursor)[0]
-    return render_template('info.html', match_data=match_data, latest_info=latest_info, url_s=url_s, main_urls=main_urls)
+    return render_template('Info.html', latest_info=latest_info, url_s=url_s)
 
     # return render_template('index.html', match_data=match_data)
 
@@ -59,6 +78,7 @@ def sub_urls():
 
 @app.route("/stored", methods=['GET','POST'])
 def main_urls():
+    print("main_urls")
     cursor = db.home_url.find()
     url_data = list(cursor)
     for url_doc in url_data:
@@ -98,6 +118,7 @@ def sub_url_collection():
 
 @app.route("/informations", methods=['GET','POST'])
 def get_information():
+    print("get_information")
     cursor = db.sub_urls.find()
     url_links = list(cursor)
     for url_link in url_links:
@@ -151,6 +172,15 @@ def get_information():
             db.information.insert_one(information)
     return redirect(url_for('matches'))
 
-# scheduler = BackgroundScheduler()
-# scheduler.add_job(get_information, 'interval', hours=3)
-# scheduler.start()
+@app.errorhandler(404)
+def error404(error):
+    return "<h1>Invalid Page 'Error 404!!!'</h1>", 404
+
+@app.errorhandler(500)
+def error500(error):
+    return "<h1>Template not found :( 'Error 500!!!'</h1>", 500
+
+scheduler = BackgroundScheduler()
+scheduler.add_job(main_urls, 'interval', hours=1)
+scheduler.add_job(get_information, 'interval', hours=1)
+scheduler.start()

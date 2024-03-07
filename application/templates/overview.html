@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<div class="search">
+    <form id="searchForm" align="center">
+        <label for="keyword">Enter Keyword:</label>
+        <input type="text" id="keyword" name="keyword">
+        <button class="btn btn-outline-success my-1 my-sm-2" type="submit">Search</button>
+    </form>
+</div>
+
+
+<div id="searchResults"></div>
+
+<script>
+    jQuery(document).ready(function($) {
+        // Your jQuery code here
+        $('#searchForm').submit(function(event) {
+            event.preventDefault();
+            var keyword = $('#keyword').val().trim();
+            console.log(keyword);
+
+            $.ajax({
+                url: '/search',
+                type: 'POST',
+                data: { keyword: keyword },
+                success: function(response) {
+                    displaySearchResults(response);
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+
+        function displaySearchResults(results) {
+            var searchResultsDiv = $('#searchResults');
+            searchResultsDiv.empty(); // Clear previous results
+
+            var count = results.length; // Count the number of articles
+
+            if (count === 0) {
+                searchResultsDiv.append('<p>No articles found.</p>');
+            } else {
+                searchResultsDiv.append('<p>Number of articles found: ' + count + '</p>');
+            }
+        }
+    });
+</script>
+
+
+<div class="row">
+  <div class="column" style="background-color:#aaa;">
+    <h2>Total URL</h2>
+    <p>Some text..</p>
+  </div>
+  <div class="column" style="background-color:#bbb;">
+    <h2>Found On Days</h2>
+    <p>Some text..</p>
+  </div>
+  <div class="column" style="background-color:#ccc;">
+    <h2>Unique URL</h2>
+    <p>Some text..</p>
+  </div>
+</div>
+
+{% endblock content %}
