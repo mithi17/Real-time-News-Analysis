@@ -12,9 +12,9 @@ scheduler = BackgroundScheduler()
 @app.route("/home", methods=["GET","POST"])
 def index():
     if request.method == 'POST':
-        url = request.form['url'].split(',')
+        url = request.form['url']
         now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        db.home_url.insert_many([{'url': url.strip(), 'date_time': now }])
+        db.home_url.insert_many([{'url': url, 'date_time': now }])
         return redirect(url_for('matches')) 
     return render_template('index.html')
 
@@ -60,15 +60,15 @@ def update():
         return 'Data updated successfully'
     
 
-@app.route("/matches", methods=['GET','POST'])
+@app.route("/info", methods=['GET','POST'])
 def matches():
     cursor = db.home_url.find()
     url_s = list(cursor)
-    info_cursor = db.information.find().sort('_id', -1).limit(1)
-    latest_info = list(info_cursor)[0]
-    return render_template('Info.html', latest_info=latest_info, url_s=url_s)
-
-    # return render_template('index.html', match_data=match_data)
+    cursor = db.main_url.find()
+    main_urls = list(cursor)
+    # info_cursor = db.information.find().sort('_id', -1).limit(1)
+    # latest_info = list(info_cursor)[0]
+    return render_template('Info.html', url_s=url_s, main_urls=main_urls)
 
 @app.route("/main_url", methods=['GET','POST'])
 def sub_urls():
@@ -122,10 +122,17 @@ def get_information():
     cursor = db.sub_urls.find()
     url_links = list(cursor)
     for url_link in url_links:
-        url = url_link['url']
-        if not db.information.find_one({'url': url}):
+        url = url_link ['url']
+        print(url_link)
+        if db.information.find_one({'url': url}):
+            print("URl already Exist, Skipping...")
+            continue
+        else:
             response = requests.get(url_link['url'])
             # print(url_link)
+            if response.status_code == 500:
+                print("Server error (500) encountered, skipping...")
+                continue
             soup = BeautifulSoup(response.content, 'html.parser')
             # print(soup)
 

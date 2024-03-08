@@ -2,6 +2,16 @@
 box-sizing: border-box;
 }
 
+#searchResults {
+  overflow: auto; /* or overflow: scroll; */
+  max-height: 500px; /* Adjust the maximum height as needed */
+}
+
+.articles-container {
+  padding-right: 17px; /* Add padding to prevent content from overlapping scrollbar */
+}
+
+
 .styled-table {
     border-collapse: collapse;
     margin: 25px 0;

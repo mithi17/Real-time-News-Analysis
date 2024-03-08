@@ -39,28 +39,37 @@
 
             var count = results.length; // Count the number of articles
 
+            // Update the count in the designated <div>
+            $('.column[style="background-color:#aaa;"] h2').text(count);
+            // $('.column[style="background-color:#ccc;"] p').text(result.url);
+
             if (count === 0) {
                 searchResultsDiv.append('<p>No articles found.</p>');
             } else {
-                searchResultsDiv.append('<p>Number of articles found: ' + count + '</p>');
+                // searchResultsDiv.append('<p>Total URL found: ' + count + '</p>');
+                // Display each search result
+                $.each(results, function(index, result) {
+                    searchResultsDiv.append('<h4><a href="' + result.url + '">' + result.url + '</a></h4>');
+                });
             }
         }
+
     });
 </script>
 
 
 <div class="row">
   <div class="column" style="background-color:#aaa;">
-    <h2>Total URL</h2>
-    <p>Some text..</p>
+    <h4>Total URL</h4>
+    <h2>...</h2>
   </div>
   <div class="column" style="background-color:#bbb;">
     <h2>Found On Days</h2>
-    <p>Some text..</p>
+    <p>...</p>
   </div>
   <div class="column" style="background-color:#ccc;">
     <h2>Unique URL</h2>
-    <p>Some text..</p>
+    <p>...</p>
   </div>
 </div>
 
