@@ -9,7 +9,7 @@
         <table id="editable-table" border="2" class="styled-table">
             <thead>
                 <tr>
-                    <th>No</th>
+                    <!-- <th>No</th> -->
                     <th>Url</th>
                     <th>Date_time</th>
                     <!-- Add more headers if needed -->
@@ -18,7 +18,7 @@
             <tbody>
                 {% for item in url_s %}
                 <tr>
-                    <td>{{ item.no }}</td>
+                    <!-- <td>{{ item.no }}</td> -->
                     <td>{{ item.url }}</td>
                     <td contenteditable="true">{{ item.date_time }}</td>
                     <!-- Add more fields if needed -->
@@ -53,8 +53,8 @@
                 for (var i = 1; i < rows.length; i++) {
                     var row = rows[i];
                     var rowData = {
-                        'url': row.cells[1].textContent, // Assuming first cell contains unique identifier
-                        'date_time': row.cells[2].textContent.trim(),// Assuming second cell is the editable field
+                        'url': row.cells[0].textContent, // Assuming first cell contains unique identifier
+                        'date_time': row.cells[1].textContent.trim(),// Assuming second cell is the editable field
                         // Add more fields if needed
                     };
                     updatedData.push(rowData);

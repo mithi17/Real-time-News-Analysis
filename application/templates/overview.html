@@ -39,37 +39,90 @@
 
             var count = results.length; // Count the number of articles
 
+            // Count unique domains
+            var uniqueDomains = {};
+            for (var i = 0; i < count; i++) {
+                var domain = getDomain(results[i].url);
+                uniqueDomains[domain] = true;
+
+                // Extract and print date and time
+                // var updatedOn = results[i].updated_on;
+                // var dateRange = formatDate(updatedOn);
+
+                // console.log("Date and Time from Result:", dateRange);
+                // console.log("Date and Time from Result:", updatedOn);
+
+                // Extract and print date range
+                var updatedOn = new Date(results[i].updated_on);
+                var startDate = formatDate(updatedOn);
+                var endDate = formatDate(new Date()); // Current date/time
+                // var dateRange = endDate + ' - IST ';
+
+                var dateRange = startDate + ' - ' + endDate;
+                console.log("Date Range from Result:", dateRange);
+
+
+            }
+            var uniqueCount = Object.keys(uniqueDomains).length;
+
             // Update the count in the designated <div>
-            $('.column[style="background-color:#aaa;"] h2').text(count);
-            // $('.column[style="background-color:#ccc;"] p').text(result.url);
+            $('.column[style="background-color:#aaaaaa50;"] h2').text(count);
+            $('.column[style="background-color:#aaaaaa52;"] h2').text(uniqueCount);
+            $('.column[style="background-color:#aaaaaa51;"] h2').text(dateRange);
+
 
             if (count === 0) {
                 searchResultsDiv.append('<p>No articles found.</p>');
-            } else {
-                // searchResultsDiv.append('<p>Total URL found: ' + count + '</p>');
-                // Display each search result
-                $.each(results, function(index, result) {
-                    searchResultsDiv.append('<h4><a href="' + result.url + '">' + result.url + '</a></h4>');
-                });
-            }
+            } 
+            // else {
+            //     // Display each search result
+            //     $.each(results, function(index, result) {
+            //         searchResultsDiv.append('<h4><a href="' + result.url + '">' + result.url + '</a></h4>');
+            //     });
+            // }
         }
+
+        function getDomain(url) {
+            // Extract domain from the URL
+            var domain;
+            if (url.indexOf("://") > -1) {
+                domain = url.split('/')[2];
+            } else {
+                domain = url.split('/')[0];
+            }
+            // Find and remove port number
+            domain = domain.split(':')[0];
+            return domain;
+        }
+        function formatDate(dateTimeString) {
+            // Format date as "dd/mm/yyyy - dd/mm/yyyy"
+            var dateTime = new Date(dateTimeString);
+            var day = dateTime.getDate();
+            var month = dateTime.getMonth() + 1;
+            var year = dateTime.getFullYear();
+            var hours = dateTime.getHours();
+            var minutes = dateTime.getMinutes();
+            var formattedDateTime = (day < 10 ? '0' : '') + day + '/' + (month < 10 ? '0' : '') + month + '/' + year + ' ' + (hours < 10 ? '0' : '') + hours + ':' + (minutes < 10 ? '0' : '') + minutes;
+            return formattedDateTime;
+        }
+
 
     });
 </script>
 
 
 <div class="row">
-  <div class="column" style="background-color:#aaa;">
+  <div class="column" style="background-color:#aaaaaa50;">
     <h4>Total URL</h4>
     <h2>...</h2>
   </div>
-  <div class="column" style="background-color:#bbb;">
-    <h2>Found On Days</h2>
-    <p>...</p>
+  <div class="column" style="background-color:#aaaaaa51;">
+    <h4>Date Range</h4>
+    <h2>...</h2>
   </div>
-  <div class="column" style="background-color:#ccc;">
-    <h2>Unique URL</h2>
-    <p>...</p>
+  <div class="column" style="background-color:#aaaaaa52;">
+    <h4>Unique URL</h4>
+    <h2>...</h2>
   </div>
 </div>
 

@@ -27,6 +27,11 @@ def keyword():
 def overview():
     return render_template('overview.html')
 
+#To add new url in main collection
+@app.route('/add', methods=['GET', 'POST'])
+def add():
+    return render_template('add_url.html')
+
 @app.route('/search', methods=['POST'])
 def search_articles():
     keyword = request.form['keyword']
@@ -37,10 +42,21 @@ def search_articles():
     # Append search results to the list
     for doc in cursor:
         # print(doc)
-        results.append({'paragraph': doc['paragraph'], 'heading': doc['heading'], 'url': doc['url']})
+        results.append({'paragraph': doc['paragraph'], 'heading': doc['heading'], 'url': doc['url'], 'updated_on': doc['updated_on']})
 
     return jsonify(results)
 
+@app.route('/add_url', methods=['POST'])
+def add_url():
+    url = request.json.get('url')
+
+    # Check if the URL already exists in the main_url collection
+    if db.main_url.find_one({'url': url}):
+        return jsonify({'error': 'URL already exists'}), 400
+
+    # Save the new URL in the main_url collection
+    db.main_url.insert_one({'url': url})
+    return jsonify({'message': 'URL added successfully'}), 201
 
 
 @app.route('/update', methods=['POST'])
@@ -66,8 +82,7 @@ def matches():
     url_s = list(cursor)
     cursor = db.main_url.find()
     main_urls = list(cursor)
-    # info_cursor = db.information.find().sort('_id', -1).limit(1)
-    # latest_info = list(info_cursor)[0]
+    
     return render_template('Info.html', url_s=url_s, main_urls=main_urls)
 
 @app.route("/main_url", methods=['GET','POST'])
@@ -113,7 +128,6 @@ def sub_url_collection():
                     continue  # Skip the current iteration if the url already exists
                 # Save each link as a separate document in the sub_url collection
                 db.sub_urls.insert_one({'url': href, 'date_time': main_url_doc['date_time']})
-    # return redirect(url_for('matches'))
 
 
 @app.route("/informations", methods=['GET','POST'])
@@ -123,18 +137,17 @@ def get_information():
     url_links = list(cursor)
     for url_link in url_links:
         url = url_link ['url']
-        print(url_link)
-        if db.information.find_one({'url': url}):
-            print("URl already Exist, Skipping...")
+        existing_doc = db.information.find_one({'url': url})
+        if existing_doc:
+            print("URL already exists, updating...")
+            # db.information.update_one(information)
             continue
         else:
-            response = requests.get(url_link['url'])
-            # print(url_link)
-            if response.status_code == 500:
-                print("Server error (500) encountered, skipping...")
+            response = requests.get(url)
+            if response.status_code != 200:
+                print(f"Failed to fetch {url}: {response.status_code}")
                 continue
             soup = BeautifulSoup(response.content, 'html.parser')
-            # print(soup)
 
             # author
             editor_div = soup.find('div', class_='editor-details-new-change')
@@ -176,7 +189,14 @@ def get_information():
                 'heading': heading if heading else 'No Heading Found!',
                 'paragraph': [paragraph_texts]
             }
-            db.information.insert_one(information)
+
+            existing_docs = db.information.find_one({'url': url})
+            if existing_docs:
+                db.information.update_one(information)
+                print("information, updating...")
+            else:
+                db.information.insert_one(information)
+
     return redirect(url_for('matches'))
 
 @app.errorhandler(404)

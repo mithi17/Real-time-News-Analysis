@@ -1,0 +1,44 @@
+{% extends "layout.html" %}
+{% block content %}
+<br>
+<br>
+<br>
+<h1>Add New URL</h1>
+    <form id="addUrlForm">
+        <label for="url">URL:</label>
+        <input type="text" id="url" name="url" required>
+        <!-- <button type="submit">Add URL</button> -->
+        <button class="btn btn-outline-success my-1 my-sm-2" value="submit" type="submit">Add URL</button>
+    </form>
+
+    <script>
+        document.getElementById("addUrlForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Prevent the form from submitting normally
+
+            // Get the URL from the form
+            const url = document.getElementById("url").value;
+
+            // Make an AJAX request to add the URL
+            fetch("/add_url", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ url })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("URL added successfully!");
+                    window.location.reload(); // Reload the page to reflect the updated list of URLs
+                } else {
+                    throw new Error("Failed to add URL");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("URL already exists or failed to add.");
+            });
+        });
+    </script>
+
+{% endblock content %}
