@@ -5,6 +5,8 @@
 <br>
 <br>
     <div align="center" style="background-color:#bbbbbb08;">
+
+        <button onclick="filterUrls()">Filter URLs with status True</button>
     
         <table id="editable-table" border="2" class="styled-table">
             <thead>
@@ -12,6 +14,7 @@
                     <!-- <th>No</th> -->
                     <th>Url</th>
                     <th>Date_time</th>
+                    <th>Status</th>
                     <!-- Add more headers if needed -->
                 </tr>
             </thead>
@@ -21,11 +24,89 @@
                     <!-- <td>{{ item.no }}</td> -->
                     <td>{{ item.url }}</td>
                     <td contenteditable="true">{{ item.date_time }}</td>
+                    <td>
+                        <button class="toggle-button" onclick="toggleStatus(this, '{{ item.url }}')">Toggle</button>
+                    </td>
                     <!-- Add more fields if needed -->
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        <!--  js script for this <button onclick="filterUrls()">Filter URLs with status True</button> -->
+        <script>
+            function filterUrls() {
+                var table = document.getElementById("editable-table");
+                var rows = table.rows;
+
+                // Iterate through the rows
+                for (var i = 1; i < rows.length; i++) {
+                    var cell = rows[i].cells[2]; // Assuming the status is stored in the third column
+
+                    // Check if the status is true, if yes, display the row
+                    if (cell.innerText === 'True') {
+                        rows[i].style.display = '';
+                    }
+                    else {
+                        // Hide the row if the status is false
+                        rows[i].style.display = 'none';
+                    }
+                }
+            }
+        </script>
+
+
+        <script>
+            function toggleStatus(button, url) {
+                var status = localStorage.getItem(url);
+                if (status === null) {
+                    status = 'False';
+                }
+                if (status === 'True') {
+                    button.innerText = 'False';
+                    button.style.backgroundColor = 'red';
+                    localStorage.setItem(url, 'False');
+                } else {
+                    button.innerText = 'True';
+                    button.style.backgroundColor = '#3498db';
+                    localStorage.setItem(url, 'True');
+                }
+
+                // Send the updated status to the server
+                // fetch('/update', {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json'
+                //     },
+                //     body: JSON.stringify([{ 'url': url, 'status': status }])
+                // }).then(response => {
+                //     if (response.ok) {
+                //         console.log('Status updated successfully');
+                //     } else {
+                //         console.error('Error updating status');
+                //     }
+                // }).catch(error => {
+                //     console.error('Error:', error);
+                // });
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                var buttons = document.querySelectorAll('.toggle-button');
+                buttons.forEach(function (button) {
+                    var url = button.parentNode.previousElementSibling.previousElementSibling.textContent;
+                    var status = localStorage.getItem(url);
+                    if (status === 'True') {
+                        button.innerText = 'True';
+                        button.style.backgroundColor = '#3498db';
+                    } else {
+                        button.innerText = 'False';
+                        button.style.backgroundColor = 'red';
+                    }
+                });
+            });
+
+        </script>
+        
     
         <button onclick="updateData()">Save Changes</button>
 
@@ -43,6 +124,7 @@
                 {% endfor %}
             </details>
         {% endfor %}
+        
     
         <script>
             function updateData() {
@@ -54,7 +136,9 @@
                     var row = rows[i];
                     var rowData = {
                         'url': row.cells[0].textContent, // Assuming first cell contains unique identifier
-                        'date_time': row.cells[1].textContent.trim(),// Assuming second cell is the editable field
+                        'date_time': row.cells[1].textContent.trim(),
+                        'status': row.cells[2].textContent.trim(),
+                        // Assuming second cell is the editable field
                         // Add more fields if needed
                     };
                     updatedData.push(rowData);
@@ -69,7 +153,7 @@
                     body: JSON.stringify(updatedData)
                 }).then(response => {
                     if (response.ok) {
-                        alert('Data updated successfully');
+                        alert('Updated Successfully');
                     } else {
                         alert('Error updating data');
                     }

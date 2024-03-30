@@ -14,7 +14,7 @@ def index():
     if request.method == 'POST':
         url = request.form['url']
         now = datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        db.home_url.insert_many([{'url': url, 'date_time': now }])
+        db.home_url.insert_many([{'url': url, 'date_time': now }]) # adding "status: True"
         return redirect(url_for('matches')) 
     return render_template('index.html')
 
@@ -61,24 +61,24 @@ def add_url():
 
 @app.route('/update', methods=['POST'])
 def update():
-    print("Updated")
     if request.method == 'POST':
         # Get updated data from the frontend
         updated_data = request.get_json()
-        # print(updated_data)
 
         # Update MongoDB with the new data
         for item in updated_data:
-            field2=item['date_time']
-            print(field2)
-            db.home_url.update_one({'url': item['url']}, {'$set': {'date_time': field2}})
+            field2 = item['date_time']
+            url = item['url']
+            status = item['status']  # Assuming status is sent from frontend
+            db.home_url.update_one({'url': url}, {'$set': {'date_time': field2, 'status': status}})
 
-        return 'Data updated successfully'
+        return 'updated successfully'
+
     
 
 @app.route("/info", methods=['GET','POST'])
 def matches():
-    cursor = db.home_url.find()
+    cursor = db.home_url.find() #{"status": True}
     url_s = list(cursor)
     cursor = db.main_url.find()
     main_urls = list(cursor)
@@ -90,6 +90,7 @@ def sub_urls():
     cursor = db.main_url.find()
     main_urls = list(cursor)
     return render_template('main_url.html', main_urls=main_urls)
+
 
 @app.route("/stored", methods=['GET','POST'])
 def main_urls():
@@ -113,7 +114,7 @@ def main_urls():
     sub_url_collection()
     return redirect(url_for('matches')) 
 
-           
+# @app.route("/stored", methods=['GET','POST'])
 def sub_url_collection():
     cursor = db.main_url.find()
     main_url_data = list(cursor)
@@ -127,7 +128,8 @@ def sub_url_collection():
                 if db.sub_urls.find_one({'url': href}):
                     continue  # Skip the current iteration if the url already exists
                 # Save each link as a separate document in the sub_url collection
-                db.sub_urls.insert_one({'url': href, 'date_time': main_url_doc['date_time']})
+                db.sub_urls.insert_one({'url': href})
+    # return redirect(url_for('matches')) 
 
 
 @app.route("/informations", methods=['GET','POST'])
@@ -196,7 +198,10 @@ def get_information():
                 print("information, updating...")
             else:
                 db.information.insert_one(information)
-
+                
+        db.information.create_index( { "url": "text", "updated_on": "text", "author": "text", "heading": "text", "paragraph": "text" } )
+        
+    
     return redirect(url_for('matches'))
 
 @app.errorhandler(404)
@@ -208,6 +213,6 @@ def error500(error):
     return "<h1>Template not found :( 'Error 500!!!'</h1>", 500
 
 scheduler = BackgroundScheduler()
-scheduler.add_job(main_urls, 'interval', hours=1)
+scheduler.add_job(sub_url_collection, 'interval', hours=1)
 scheduler.add_job(get_information, 'interval', hours=1)
 scheduler.start()
