@@ -95,7 +95,7 @@ def sub_urls():
 @app.route("/stored", methods=['GET','POST'])
 def main_urls():
     print("main_urls")
-    cursor = db.home_url.find()
+    cursor = db.home_url.find({'status': 'True'}) #filter the status to only show true urls
     url_data = list(cursor)
     for url_doc in url_data:
         url = url_doc['url']
