@@ -108,9 +108,9 @@ body{
 /* Create three equal columns that floats next to each other */
 .column {
   float: left;
-  width: 33.33%;
+  width: 24.33%;
   padding: 10px;
-  height: 300px; /* Should be removed. Only for demonstration */
+  height: 160px; /* Should be removed. Only for demonstration */
 }
 
 /* Clear floats after the columns */
@@ -119,5 +119,23 @@ body{
   display: table;
   clear: both;
 }
+
+.row{
+  display: flex;
+  flex-wrap: wrap;
+  margin-right: -33px;
+  margin-left: 0px;
+  
+}
+
+#authorTable {
+  display: none; /* Add this line to hide the table by default */
+}
+
+#subURLs {
+  display: none;
+}
+
+
 
 

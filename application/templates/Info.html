@@ -113,18 +113,19 @@
         <br>
         <br>
         
-
+        <p>Total Sub URLs: {{ url_s|length }}</p>
         {% for items in url_s %}
             <details style="max-height: 300px; overflow-y: auto;">
                 <h3>Sub URL's</h3>
                 <summary>click Here: {{ items.url }}</summary>
                 {% for item in main_urls %}
                     <div>
-                        <p>{{item.url }}</p>
+                        <p>{{item.url }}</p> 
                     </div>
                 {% endfor %}
             </details>
         {% endfor %}
+        
         
     
         <script>

@@ -25,7 +25,40 @@ def keyword():
 
 @app.route('/overview', methods=['GET', 'POST'])
 def overview():
-    return render_template('overview.html')
+    cursor = db.home_url.find()
+    url_s = list(cursor)
+    
+    cursor = db.main_url.find()
+    main_urls = list(cursor)
+    
+    cursor = db.information.find({'author': {'$ne': ''}})
+    authors = list(cursor)
+
+    unique_domains = set()  # Initialize an empty set to store unique domains
+    for doc in main_urls:
+        parsed_url = urlparse(doc['url'])  # Parse the URL
+        domain = parsed_url.netloc  # Extract the domain from the parsed URL
+        unique_domains.add(domain)  # Add the domain to the set of unique domains
+
+    # Convert the set to a list
+    unique = list(unique_domains)
+
+    # Count the number of unique domains
+    domain_count = len(unique_domains)
+
+    # Split the list one by one
+    split_unique = []
+    for domain in unique:
+        split_unique.append([domain])
+
+    unique_authors = set()  # Initialize an empty set to store unique non-empty authors
+    for doc in authors:
+        if doc['author']:  # Check if 'author' field is non-empty
+            unique_authors.add(doc['author'])  # Add non-empty author to the set
+    
+    author_count = len(unique_authors)  # Count the number of unique non-empty authors
+
+    return render_template('overview.html', url_s=url_s, main_urls=main_urls, author_count=author_count, authors=authors, domain_count=domain_count, unique=unique, split_unique=split_unique)
 
 #To add new url in main collection
 @app.route('/add', methods=['GET', 'POST'])

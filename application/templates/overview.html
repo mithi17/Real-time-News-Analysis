@@ -3,14 +3,11 @@
 
 <div class="search">
     <form id="searchForm" align="center">
-        <label for="keyword">Enter Keyword:</label>
-        <input type="text" id="keyword" name="keyword">
+        <label for="keyword">User Insights:</label>
+        <input type="text" id="keyword" name="keyword" placeholder="Data Investigation">
         <button class="btn btn-outline-success my-1 my-sm-2" type="submit">Search</button>
     </form>
 </div>
-
-
-<div id="searchResults"></div>
 
 <script>
     jQuery(document).ready(function($) {
@@ -110,20 +107,229 @@
     });
 </script>
 
+<script>
+    function toggleSubURLs() {
+        var subURLs = document.getElementById("subURLs");
+        if (subURLs.style.display === "none") {
+            subURLs.style.display = "block";
+        } else {
+            subURLs.style.display = "none";
+        }
+    }
+
+    function toggleHomeURLs() {
+        var homeURLS = document.getElementById("homeURLs");
+        if (homeURLs.style.display === "none") {
+            homeURLs.style.display = "block";
+        } else {
+            homeURLs.style.display = "none";
+        }
+    }
+
+    function toggleUniqueURLs() {
+        var uniqueURLs = document.getElementById("uniqueURLs");
+        if (uniqueURLs.style.display === "none") {
+            uniqueURLs.style.display = "block";
+        } else {
+            uniqueURLs.style.display = "none";
+        }
+    }
+
+
+    function toggleSubURLs() {
+        hideAllSectionsExcept('subURLs');
+    }
+
+    function toggleHomeURLs() {
+        hideAllSectionsExcept('homeURLs');
+    }
+
+    function toggleAuthors() {
+        hideAllSectionsExcept('authors');
+    }
+
+    function toggleUniqueURLs() {
+        hideAllSectionsExcept('uniqueURLs')
+    }
+
+    function hideAllSectionsExcept(sectionId) {
+        var sections = ['subURLs', 'homeURLs', 'authors', 'uniqueURLs'];
+        sections.forEach(function(section) {
+            if (section !== sectionId) {
+                var sectionElement = document.getElementById(section);
+                if (sectionElement.style.display === "block") {
+                    sectionElement.style.display = "none";
+                }
+            }
+        });
+        var currentSection = document.getElementById(sectionId);
+        currentSection.style.display = (currentSection.style.display === "block") ? "none" : "block";
+    }
+
+
+</script>
+
 
 <div class="row">
-  <div class="column" style="background-color:#aaaaaa50;">
-    <h4>Total URL</h4>
-    <h2>...</h2>
-  </div>
-  <div class="column" style="background-color:#aaaaaa51;">
-    <h4>Date Range</h4>
-    <h2>...</h2>
-  </div>
-  <div class="column" style="background-color:#aaaaaa52;">
-    <h4>Unique URL</h4>
-    <h2>...</h2>
-  </div>
+
+    <!-- //HomeURLS -->
+    <div class="column" style="background-color:#aaaaaa50;">
+        <h4 onclick="toggleHomeURLs()">Total URLs</h4>
+        <h2>{{ url_s|length }}</h2>
+    </div>
+
+    <!-- //subURLS -->
+    <div class="column" style="background-color:#aaaaaa54;">
+        <h4 onclick="toggleSubURLs()">Total Sub URLs</h4>
+        <h2>{{ main_urls|length }}</h2>
+    </div>
+
+    <!-- //Author -->
+    <div class="column" style="background-color:#aaaaaa53;">
+        <h4 onclick="toggleAuthors()">Total Authors</h4>
+        <h2>{{ author_count }}</h2>
+    </div>
+
+    <!-- //uniqueCount -->
+    <div class="column" style="background-color:#aaaaaa52;">
+        <h4 onclick="toggleUniqueURLs()">Unique URL</h4>
+        <h2>{{ domain_count }}</h2>
+    </div>
 </div>
+
+<br>
+<br>
+
+
+
+<!-- Total URLs Section -->
+<div id="homeURLs" style="display: none;">
+    <h4>Total URLs</h4>
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for url in url_s %}
+                <tr>
+                    <td>{{ url.url }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Total Sub URLs Section -->
+<div id="subURLs" style="height: 400px; overflow-y: auto;">
+    <h4>Total Sub URLs</h4>
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sub_url in main_urls %}
+                <tr>
+                    <td>{{ sub_url.url }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Unique URLs Section -->
+<div id="uniqueURLs" style="display: none;">
+    <h4>Unique URLs</h4>
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>URL</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ split_unique }}</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- //AuthorTable -->
+
+<div id="authors" style="height: 400px; overflow-y: auto;">
+    <br>
+    <input type="text" id="searchInput" placeholder="Search by author or category" onkeyup="searchTable()">
+    <table id="authorTable" class="styled-table">
+        <thead>
+            <tr>
+                <th>Author</th>
+                <th>Date</th>
+                <th>Content</th>
+                <th>Category</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for author in authors %}
+                <tr>
+                    <td>{{ author.author }}</td>
+                    <td>{{ author.updated_on }}</td>
+                    <td>{{ author.paragraph }}</td>
+                    <td>{{ author.path }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+
+<script>
+
+    function toggleAuthors() {
+        var authorsDiv = document.getElementById("authors");
+        var table = document.getElementById("authorTable");
+
+        if (authorsDiv.style.display === "none" || authorsDiv.style.display === "") {
+            // If authors section is hidden or not displayed
+            authorsDiv.style.display = "block"; // Show the authors section
+            table.style.display = "table"; // Show the author table
+        } else {
+            // If authors section is already visible
+            authorsDiv.style.display = "none"; // Hide the authors section
+            table.style.display = "none"; // Hide the author table
+        }
+    }
+
+</script>
+
+<script>
+    function searchTable() {
+        // Declare variables
+        var input, filter, table, tr, td, i, txtValue;
+        input = document.getElementById("searchInput");
+        filter = input.value.toUpperCase();
+        table = document.getElementById("authorTable");
+        tr = table.getElementsByTagName("tr");
+
+        // Loop through all table rows, and hide those that don't match the search query in Author or Category
+        for (i = 0; i < tr.length; i++) {
+            tdAuthor = tr[i].getElementsByTagName("td")[0]; // Search in the first column (Author)
+            tdCategory = tr[i].getElementsByTagName("td")[3]; // Search in the fourth column (Category)
+            if (tdAuthor && tdCategory) {
+                txtValueAuthor = tdAuthor.textContent || tdAuthor.innerText;
+                txtValueCategory = tdCategory.textContent || tdCategory.innerText;
+                if (txtValueAuthor.toUpperCase().indexOf(filter) > -1 || txtValueCategory.toUpperCase().indexOf(filter) > -1) {
+                    tr[i].style.display = "";
+                } else {
+                    tr[i].style.display = "none";
+                }
+            }
+        }
+    }
+</script>
 
 {% endblock content %}
