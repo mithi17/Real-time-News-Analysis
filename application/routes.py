@@ -1,11 +1,13 @@
 from application import app,render_template,request, redirect, url_for,db,datetime,requests,BeautifulSoup,re, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
 from urllib.parse import urlparse
+
 # from bson.objectid import ObjectId
 # from flask import jsonify
 
    
 scheduler = BackgroundScheduler()
+
 
 @app.route('/', methods=['GET','POST'])
 
@@ -25,6 +27,7 @@ def keyword():
 
 @app.route('/overview', methods=['GET', 'POST'])
 def overview():
+
     cursor = db.home_url.find()
     url_s = list(cursor)
     
@@ -34,7 +37,7 @@ def overview():
     cursor = db.information.find({'author': {'$ne': ''}})
     authors = list(cursor)
 
-    unique_domains = set()  # Initialize an empty set to store unique domains
+    unique_domains = set()  
     for doc in main_urls:
         parsed_url = urlparse(doc['url'])  # Parse the URL
         domain = parsed_url.netloc  # Extract the domain from the parsed URL
@@ -75,7 +78,7 @@ def search_articles():
     # Append search results to the list
     for doc in cursor:
         # print(doc)
-        results.append({'paragraph': doc['paragraph'], 'heading': doc['heading'], 'url': doc['url'], 'updated_on': doc['updated_on']})
+        results.append({'paragraph': doc['paragraph'], 'heading': doc['heading'], 'url': doc['url'], 'updated_on': doc['updated_on'], 'author': doc['author'], 'path': doc['path'] })
 
     return jsonify(results)
 
@@ -216,9 +219,13 @@ def get_information():
             parsed_url = urlparse(url)
             path = parsed_url.path
 
+            # Split the path into its components and extract the desired elements
+            path_elements = path.split('/')
+            paths = path_elements[2:3]
+
             information = {
                 'url': url,
-                'path': path,
+                'path': paths,
                 'updated_on': date_time,
                 'author': author_name,
                 'heading': heading if heading else 'No Heading Found!',
@@ -232,7 +239,7 @@ def get_information():
             else:
                 db.information.insert_one(information)
                 
-        db.information.create_index( { "url": "text", "updated_on": "text", "author": "text", "heading": "text", "paragraph": "text" } )
+        db.information.create_index( { "url": "text", "updated_on": "text", "author": "text", "heading": "text", "paragraph": "text", "path": "text" } )
         
     
     return redirect(url_for('matches'))

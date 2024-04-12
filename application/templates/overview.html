@@ -9,6 +9,7 @@
     </form>
 </div>
 
+
 <script>
     jQuery(document).ready(function($) {
         // Your jQuery code here
@@ -20,7 +21,7 @@
             $.ajax({
                 url: '/search',
                 type: 'POST',
-                data: { keyword: keyword },
+                data: { keyword: keyword},
                 success: function(response) {
                     displaySearchResults(response);
                 },
@@ -31,53 +32,100 @@
         });
 
         function displaySearchResults(results) {
-            var searchResultsDiv = $('#searchResults');
-            searchResultsDiv.empty(); // Clear previous results
+            // Clear previous results from tables and divs
+            var subURLsTable = $('#subURLs table');
+            subURLsTable.empty();
 
-            var count = results.length; // Count the number of articles
+            var uniqueURLsTable = $('#uniqueURLs table tbody');
+            uniqueURLsTable.empty();
 
-            // Count unique domains
-            var uniqueDomains = {};
+            var authorTable = $('#authors table tbody');
+            authorTable.empty();
+
+            // Initialize variables to track unique URLs and authors
+            var uniqueURLs = {};
+            var authors = new Set();
+            console.log('Authors:', authors);
+            
+ // Use a Set to store unique authors
+            var count = results.length;
+
+            // Process each search result
             for (var i = 0; i < count; i++) {
-                var domain = getDomain(results[i].url);
-                uniqueDomains[domain] = true;
+                var result = results[i];
 
-                // Extract and print date and time
-                // var updatedOn = results[i].updated_on;
-                // var dateRange = formatDate(updatedOn);
+                // Add URLs to the Sub URLs table
+                var resultLink = $('<a href="' + result.url + '">' + result.url + '</a>');
+                var subURLsRow = $('<tr></tr>');
+                var subURLsCell = $('<td></td>').append(resultLink);
+                subURLsRow.append(subURLsCell);
+                subURLsTable.append(subURLsRow);
 
-                // console.log("Date and Time from Result:", dateRange);
-                // console.log("Date and Time from Result:", updatedOn);
+                // Track unique URLs
+                var domain = getDomain(result.url);
+                if (!uniqueURLs[domain]) {
+                    uniqueURLs[domain] = result.url;
+                }
 
-                // Extract and print date range
-                var updatedOn = new Date(results[i].updated_on);
-                var startDate = formatDate(updatedOn);
-                var endDate = formatDate(new Date()); // Current date/time
-                // var dateRange = endDate + ' - IST ';
+                // Track authors
+                if (result.author) {
+                    authors.add(result.author);
+                }
+            
 
-                var dateRange = startDate + ' - ' + endDate;
-                console.log("Date Range from Result:", dateRange);
-
-
+                // Populate the author table
+                var authorRow = $('<tr></tr>');
+                
+                // Create a cell for the author
+                var authorCell = $('<td></td>').text(result.author || 'N/A');
+                authorRow.append(authorCell);
+                
+                // Create a cell for the date
+                var dateCell = $('<td></td>').text(result.updated_on || 'N/A');
+                authorRow.append(dateCell);
+                
+                // Create a cell for the paragraph
+                var paragraphCell = $('<td></td>').text(result.paragraph || 'N/A');
+                authorRow.append(paragraphCell);
+                
+                // Create a cell for the content
+                var contentCell = $('<td></td>').text(result.path || 'N/A');
+                authorRow.append(contentCell);
+                
+                // Append the row to the author table
+                authorTable.append(authorRow);
             }
-            var uniqueCount = Object.keys(uniqueDomains).length;
-
-            // Update the count in the designated <div>
-            $('.column[style="background-color:#aaaaaa50;"] h2').text(count);
-            $('.column[style="background-color:#aaaaaa52;"] h2').text(uniqueCount);
-            $('.column[style="background-color:#aaaaaa51;"] h2').text(dateRange);
 
 
+
+            // Populate the unique URLs table
+            var uniqueURLCount = 0;
+            for (var domain in uniqueURLs) {
+                uniqueURLCount++;
+                var url = uniqueURLs[domain];
+                var uniqueURLsRow = $('<tr></tr>');
+                var uniqueURLsCell = $('<td></td>').text(url);
+                uniqueURLsRow.append(uniqueURLsCell);
+                uniqueURLsTable.append(uniqueURLsRow);
+            }
+
+            // Update the unique URL count
+            $('.column[style="background-color:#aaaaaa52;"] h2').text(uniqueURLCount);
+            
+            // Update the total number of results
+            $('.column[style="background-color:#aaaaaa54;"] h2').text(count);
+
+            // Update the total author count (including duplicates)
+            var totalAuthorCount = authors.size;
+            $('.column[style="background-color:#aaaaaa53;"] h2').text(totalAuthorCount);
+
+            // Handle case when there are no URLs found
             if (count === 0) {
-                searchResultsDiv.append('<p>No Data found.</p>');
-            } 
-            // else {
-            //     // Display each search result
-            //     $.each(results, function(index, result) {
-            //         searchResultsDiv.append('<h4><a href="' + result.url + '">' + result.url + '</a></h4>');
-            //     });
-            // }
+                subURLsTable.append('<tr><td>No URLs found.</td></tr>');
+            }
         }
+
+
 
         function getDomain(url) {
             // Extract domain from the URL
@@ -144,6 +192,10 @@
         hideAllSectionsExcept('homeURLs');
     }
 
+    function searchTable() {
+        hideAllSectionsExcept('searchInput')
+    }
+
     function toggleAuthors() {
         hideAllSectionsExcept('authors');
     }
@@ -153,7 +205,7 @@
     }
 
     function hideAllSectionsExcept(sectionId) {
-        var sections = ['subURLs', 'homeURLs', 'authors', 'uniqueURLs'];
+        var sections = ['subURLs', 'homeURLs', 'authors', 'uniqueURLs', 'searchInput'];
         sections.forEach(function(section) {
             if (section !== sectionId) {
                 var sectionElement = document.getElementById(section);
@@ -181,7 +233,7 @@
     <!-- //subURLS -->
     <div class="column" style="background-color:#aaaaaa54;">
         <h4 onclick="toggleSubURLs()">Total Sub URLs</h4>
-        <h2>{{ main_urls|length }}</h2>
+        <h2 onclick="toggleSubURLs()">{{ main_urls|length }}</h2>
     </div>
 
     <!-- //Author -->
@@ -222,7 +274,7 @@
 </div>
 
 <!-- Total Sub URLs Section -->
-<div id="subURLs" style="height: 400px; overflow-y: auto;">
+<div id="subURLs" style="height: 401px; overflow-y: auto;">
     <h4>Total Sub URLs</h4>
     <table class="styled-table">
         <thead>
@@ -239,6 +291,7 @@
         </tbody>
     </table>
 </div>
+
 
 <!-- Unique URLs Section -->
 <div id="uniqueURLs" style="display: none;">
@@ -330,6 +383,8 @@
             }
         }
     }
+
+    
 </script>
 
 {% endblock content %}
