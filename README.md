@@ -1,4 +1,4 @@
 Install all packages
 
-Create the following database and collections
+Create the following database and collections in mongoDB
 

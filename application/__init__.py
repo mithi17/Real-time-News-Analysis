@@ -33,7 +33,7 @@ class Sentiment():
 
 @app.route('/test-sentiment')
 def test_sentiment():
-    # Sample paragraph
+    
     sample_paragraph = ("Six people went missing from spiritual leader ‘Sadhguru’ Jaggi Vasudev’s Isha Foundation "
                         "centre in Tamil Nadu’s Coimbatore since 2016, but it’s unclear if any of them returned, police have told the Madras High Court."
                         "Police made this submission Thursday before a division bench of Justices M S Ramesh and Sunder Mohan during the hearing of a habeas corpus petition by one Thirumalai, who has sought the whereabouts of his brother, Ganesan."
@@ -54,11 +54,9 @@ def test_sentiment():
                         "Patra has written to the CEC, alleging violation of MCC and criminal activity."
                         "BJP denies allegations and challenges BJD to provide proof to ECI.")
 
-    # Create an instance of the Sentiment class
     sen = Sentiment()
     sentiment_classification = sen.analyze_sentiment_vader(sample_paragraph)
 
-    # Return the sentiment classification as a response
     return f"The sentiment classification of the paragraph is: {sentiment_classification}"
 
 

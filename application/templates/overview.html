@@ -312,7 +312,7 @@
 
 <!-- //AuthorTable -->
 
-<div id="authors" style="height: 400px; overflow-y: auto;">
+<div id="authors" style="height: 500px; overflow-y: auto;">
     <br>
     <input type="text" id="searchInput" placeholder="Search by author or category" onkeyup="searchTable()">
     <table id="authorTable" class="styled-table">
@@ -322,6 +322,7 @@
                 <th>Date</th>
                 <th>Content</th>
                 <th>Category</th>
+                <th>Sentiment</th>
             </tr>
         </thead>
         <tbody>
@@ -331,6 +332,7 @@
                     <td>{{ author.updated_on }}</td>
                     <td>{{ author.paragraph }}</td>
                     <td>{{ author.path }}</td>
+                    <td>{{ author.sentiment }}</td>
                 </tr>
             {% endfor %}
         </tbody>
@@ -362,20 +364,28 @@
 <script>
     function searchTable() {
         // Declare variables
-        var input, filter, table, tr, td, i, txtValue;
+        var input, filter, table, tr, tdAuthor, tdCategory, tdSentiment, i, txtValueAuthor, txtValueCategory, txtValueSentiment;
         input = document.getElementById("searchInput");
         filter = input.value.toUpperCase();
         table = document.getElementById("authorTable");
         tr = table.getElementsByTagName("tr");
-
-        // Loop through all table rows, and hide those that don't match the search query in Author or Category
+    
+        // Loop through all table rows, and hide those that don't match the search query in Author, Category, or Sentiment
         for (i = 0; i < tr.length; i++) {
             tdAuthor = tr[i].getElementsByTagName("td")[0]; // Search in the first column (Author)
             tdCategory = tr[i].getElementsByTagName("td")[3]; // Search in the fourth column (Category)
-            if (tdAuthor && tdCategory) {
+            tdSentiment = tr[i].getElementsByTagName("td")[4]; // Search in the fifth column (Sentiment)
+            
+            if (tdAuthor && tdCategory && tdSentiment) {
+                // Retrieve the text content from each column and convert to uppercase for comparison
                 txtValueAuthor = tdAuthor.textContent || tdAuthor.innerText;
                 txtValueCategory = tdCategory.textContent || tdCategory.innerText;
-                if (txtValueAuthor.toUpperCase().indexOf(filter) > -1 || txtValueCategory.toUpperCase().indexOf(filter) > -1) {
+                txtValueSentiment = tdSentiment.textContent || tdSentiment.innerText;
+                
+                // Check if the filter matches any of the columns
+                if (txtValueAuthor.toUpperCase().indexOf(filter) > -1 ||
+                    txtValueCategory.toUpperCase().indexOf(filter) > -1 ||
+                    txtValueSentiment.toUpperCase().indexOf(filter) > -1) {
                     tr[i].style.display = "";
                 } else {
                     tr[i].style.display = "none";
@@ -383,6 +393,7 @@
             }
         }
     }
+    
 
     
 </script>

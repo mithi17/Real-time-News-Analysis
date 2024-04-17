@@ -28,6 +28,9 @@ box-sizing: border-box;
 .styled-table th,
 .styled-table td {
     padding: 12px 15px;
+    vertical-align: top;
+    /* overflow-y: auto;
+    height: 400px; */
 }
 .styled-table tbody tr {
     border-bottom: 1px solid #dddddd;
