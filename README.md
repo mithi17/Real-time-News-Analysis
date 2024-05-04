@@ -17,3 +17,6 @@ create a collections in mongodb
 
 Create the following database and collections in mongoDB
 
+
+![Screenshot from 2024-04-18 12-28-41](https://github.com/mithi17/Real-time-News-Analysis/assets/71600047/004a4213-3fa3-4a98-9fe2-d86d9b40e9d9)
+
